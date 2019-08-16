@@ -1,0 +1,5 @@
+*.lock
+package-lock*
+*.sublime-*
+node_modules/
+secret.json

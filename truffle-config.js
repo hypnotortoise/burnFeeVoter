@@ -20,6 +20,12 @@ module.exports = {
       provider: function() {
         return new HDWalletProvider(secrets.mnemonic, "https://rinkeby.infura.io/v3/" + secrets.infuraApiKey);
       }
+    },
+    mainnet: {
+      network_id: "1",
+      provider: function() {
+        return new HDWalletProvider(secrets.mnemonic, "https://mainnet.infura.io/v3/" + secrets.infuraApiKey);
+      }
     }
   }
 };
