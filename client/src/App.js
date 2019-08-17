@@ -11,6 +11,9 @@ import Card from 'react-bootstrap/Card';
 import CardGroup from 'react-bootstrap/CardGroup';
 import Image from 'react-bootstrap/Image';
 
+import BootstrapTable from 'react-bootstrap-table/lib/BootstrapTable';
+import TableHeaderColumn from 'react-bootstrap-table/lib/TableHeaderColumn';
+
 const etherscanBaseUrl = "https://rinkeby.etherscan.io";
 
 class App extends Component {
@@ -62,9 +65,9 @@ class App extends Component {
     }
   };
 
-  componentWillUnmount() {
-    this.unsubscribe();
-  }
+  // componentWillUnmount() {
+  //   this.unsubscribe();
+  // }
 
   addEventListener(component) {
     // get all issued votes events
@@ -74,11 +77,14 @@ class App extends Component {
       event.returnValues['voteFee'] = event.returnValues.fee;
       event.returnValues['voteState'] = "VOTED";
 
-      var votes = this.state.votes;
+      var votes = component.state.votes;
       votes[voter] = event.returnValues;
       component.setState({ votes: votes });
-      console.log(votes);
-      component.setState({ voteState: votes[voter].voteState });
+
+      if (Object.keys(component.state.votes).includes(component.state.account)) {
+        component.setState({ voteState: component.state.votes[component.state.account].voteState });
+        component.setState({ voteFee: component.state.votes[component.state.account].voteFee });
+      }
     })
     .on('error', console.error);
 
@@ -89,10 +95,14 @@ class App extends Component {
       event.returnValues['voteFee'] = event.returnValues.fee;
       event.returnValues['voteState'] = "VOTED";
 
-      var votes = this.state.votes;
+      var votes = component.state.votes;
       votes[voter] = event.returnValues;
       component.setState({ votes: votes });
-      component.setState({ voteState: votes[voter].voteState });
+
+      if (Object.keys(component.state.votes).includes(component.state.account)) {
+        component.setState({ voteState: component.state.votes[component.state.account].voteState });
+        component.setState({ voteFee: component.state.votes[component.state.account].voteFee });
+      }
     })
     .on('error', console.error);
 
@@ -101,14 +111,20 @@ class App extends Component {
     .on('data', async (event) => {
       var voter = event.returnValues.voter;
       event.returnValues['voteState'] = "CANCELLED";
-      event.returnValues['voteFee'] = this.state.votes[voter].voteFee;
+      event.returnValues['voteFee'] = component.state.votes[voter].voteFee;
 
-      var votes = this.state.votes;
+      var votes = component.state.votes;
       votes[voter] = event.returnValues;
       component.setState({ votes: votes });
-      component.setState({ voteState: votes[voter].voteState });
+
+      if (Object.keys(component.state.votes).includes(component.state.account)) {
+        component.setState({ voteState: component.state.votes[component.state.account].voteState });
+        component.setState({ voteFee: component.state.votes[component.state.account].voteFee });
+      }
     })
     .on('error', console.error);
+
+    console.log(component.state.votes)
   }
 
   async handleIssueVote(event) {
@@ -161,7 +177,17 @@ class App extends Component {
     if (!this.state.web3) {
       return <div>Loading Web3, accounts, and contract...</div>;
     }
-    var cardHeader = (() => {
+
+    var voteButton, cancelButton;
+    if (this.state.voteState === "CANCELLED") {
+      voteButton =  <Button type="submit" disabled>{(this.state.voteState === "NOT_VOTED") ? "Vote" : "Change Vote"}</Button>
+      cancelButton = <Button type="submit" disabled>Cancel Vote</Button>;
+    } else {
+      voteButton =  <Button type="submit">{(this.state.voteState === "NOT_VOTED") ? "Vote" : "Change Vote"}</Button>
+      cancelButton = <Button type="submit">Cancel Vote</Button>;
+    }
+
+    let cardHeader = (() => {
       switch (this.state.voteState) {
         case "NOT_VOTED":
         case "CANCELLED":
@@ -178,10 +204,10 @@ class App extends Component {
           <Row className="justify-content-md-center">
           <Image
               className="App-logo"
-              src="logo512.png"
+              src="logo.svg"
           />
           </Row>
-          <Row>
+          <Row className="justify-content-md-center">
           <CardGroup>
           <Card>
             { cardHeader }
@@ -197,17 +223,30 @@ class App extends Component {
                   min="0"
                   max="45"
                   step="1"
+                  disabled={(this.state.voteState === "CANCELLED")}
                 />
                 <Form.Text>Vote for Burn Fee ({this.state.voteFee}%)</Form.Text>
-                <Button type="submit">{(this.state.voteState === "NOT_VOTED") ? "Vote" : "Change Vote"}</Button>
+                {voteButton}
                 </Form.Group>
               </Form>
               <Form onSubmit={this.handleCancelVote}>
-                <Button type="submit">Cancel Vote</Button>
+                {cancelButton}
               </Form>
+              {(this.state.voteState === "CANCELLED") ? <Card.Text className="mt-5 alert alert-info">You previously cancelled your vote.<br />Can't vote again</Card.Text> : ""}
             </Card.Body>
           </Card>
           </CardGroup>
+          </Row>
+          <Row className="justify-content-md-center">
+          <Card>
+          <Card.Header>Issued Votes</Card.Header>
+          <Card.Body>
+            <BootstrapTable data={Object.values(this.state.votes)} striped hover>
+              <TableHeaderColumn isKey dataField='voter'>Voter</TableHeaderColumn>
+              <TableHeaderColumn dataField='voteFee'>Voted(in %)</TableHeaderColumn>
+            </BootstrapTable>
+          </Card.Body>
+          </Card>
           </Row>
         </Container>
       </div>
