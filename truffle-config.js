@@ -3,8 +3,8 @@ const fs = require('fs');
 const path = require("path");
 let secrets;
 
-if (fs.existsSync('../secret.json')) {
-  secrets = JSON.parse(fs.readFileSync('../secret.json', 'utf8'));
+if (fs.existsSync('./secret.json')) {
+  secrets = JSON.parse(fs.readFileSync('./secret.json', 'utf8'));
 }
 
 module.exports = {

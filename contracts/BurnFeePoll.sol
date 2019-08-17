@@ -1,11 +1,11 @@
 pragma solidity ^0.5.0;
 /**
 * @title BurnFeePoll
-* @author hypntortoise
+* @author hypnotortoise
 * @notice Simple Vote Contract for DigixDAO participants to signal a proposed burn fee
 *
 */
-import "@openzeppelin-solidity/contracts/math/SafeMath.sol";
+import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 
 interface DigixDao {
     function isParticipant(address _user) external view returns (bool _is);
@@ -23,7 +23,7 @@ contract BurnFeePoll {
     enum VoteStatus { NOT_VOTED, VOTED, CANCELLED }
 
     struct Vote {
-        uint fee;
+        uint8 fee;
         VoteStatus status;
     }
 
@@ -39,8 +39,8 @@ contract BurnFeePoll {
     /**
     * Events
     */
-    event VoteIssued(address voter, uint fee);
-    event VoteChanged(address voter, uint fee);
+    event VoteIssued(address voter, uint8 fee);
+    event VoteChanged(address voter, uint8 fee);
     event VoteCancelled(address voter);
     event ParticipantStatus(address voter, bool status);
 
@@ -64,7 +64,7 @@ contract BurnFeePoll {
     * @param _fee voted fee
     */
     function issueVote (
-        uint _fee
+        uint8 _fee
     )
     public
     beforeDeadline()
@@ -80,7 +80,7 @@ contract BurnFeePoll {
     * @dev changeVote(): modifiy existing vote
     * @param _fee changed fee
     */
-    function changeVote(uint _fee)
+    function changeVote(uint8 _fee)
     public
     beforeDeadline()
     isQuarterParticipant()
@@ -114,7 +114,7 @@ contract BurnFeePoll {
         _;
     }
 
-    modifier feeWithinRange(uint _fee) {
+    modifier feeWithinRange(uint8 _fee) {
         require(
             lowerBoundFeePercent <= _fee &&
             _fee <= upperBoundFeePercent
