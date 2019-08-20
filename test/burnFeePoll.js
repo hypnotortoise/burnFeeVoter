@@ -12,13 +12,6 @@ contract('BurnFeePoll', function(accounts) {
     burnFeePollInstance = await BurnFeePoll.new();
   });
 
-  it("Should assert that the current voter is a Participant", async () => {
-    let tx = await burnFeePollInstance.checkParticipant( {from: accounts[4]} );
-    const logCheckParticipant = tx.logs[0];
-    assert.strictEqual(logCheckParticipant.event, "ParticipantStatus", "checkParticipant() call did not log event ParticipantStatus");
-    assert.strictEqual(logCheckParticipant.args.status, true, "ParticipantStatus event logged did not have expected participant status");
-  });
-
   it("Should allow a participant to issue a new vote", async () => {
     let tx = await burnFeePollInstance.issueVote(
       30,
@@ -31,6 +24,7 @@ contract('BurnFeePoll', function(accounts) {
     assert.strictEqual(logVoteIssued.event, "VoteIssued", "issueVote() call did not log event VoteIssued");
     assert.strictEqual(logVoteIssued.args.voter, accounts[4], "VoteIssued event logged did not have expected voter");
     assert.strictEqual(logVoteIssued.args.fee.toNumber(), 30, "VoteIssued event logged did not have expected fee");
+    assert.strictEqual(logVoteIssued.args.lockedDgdStake.toNumber(), 110000000000, "VoteIssued event logged did not have expected lockedDgdStake");
   });
 
   it("Should not allow a participant to issue a vote sending ETH to the contract", async () => {

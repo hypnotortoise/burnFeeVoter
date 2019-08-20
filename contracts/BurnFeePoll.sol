@@ -7,7 +7,20 @@ pragma solidity ^0.5.0;
 */
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 
-interface DigixDao {
+interface DigixDaoInfo {
+    function readUserInfo(address _user)
+    external
+    view
+    returns
+    (
+        bool _isParticipant,
+        bool _isModerator,
+        uint256 _lastParticipatedQuarter,
+        uint256 _lockedDgdStake,
+        uint256 _lockedDgd,
+        uint256 _reputationPoints,
+        uint256 _quarterPoints
+    );
     function isParticipant(address _user) external view returns (bool _is);
 }
 
@@ -17,14 +30,15 @@ contract BurnFeePoll {
     * State variables
     */
     address public owner = msg.sender;
-    address daoAddress = 0x5d093A0e0328Ad17469b948De7f2DfD4b5eE5544;
-    DigixDao digixDaoContract = DigixDao(daoAddress);
+    address daoInfoAddress = 0x403cc7802725928652a3d116Bb1781005e2e76d3;
+    DigixDaoInfo digixDaoInfoContract = DigixDaoInfo(daoInfoAddress);
 
     enum VoteStatus { NOT_VOTED, VOTED, CANCELLED }
 
     struct Vote {
         uint8 fee;
         VoteStatus status;
+        uint256 lockedDgdStake;
     }
 
     uint256 startTime = now;
@@ -39,25 +53,14 @@ contract BurnFeePoll {
     /**
     * Events
     */
-    event VoteIssued(address voter, uint8 fee);
+    event VoteIssued(address voter, uint8 fee, uint256 lockedDgdStake);
     event VoteChanged(address voter, uint8 fee);
     event VoteCancelled(address voter);
-    event ParticipantStatus(address voter, bool status);
 
     /**
     * @dev constructor
     */
     constructor() public {}
-
-    /**
-    * @dev checkParticipant(): only for debugging purpose
-    */
-    function checkParticipant()
-    public
-    {
-        bool isParticipant = digixDaoContract.isParticipant(msg.sender);
-        emit ParticipantStatus(msg.sender, isParticipant);
-    }
 
     /**
     * @dev issueVote(): instantiates a new vote
@@ -72,8 +75,17 @@ contract BurnFeePoll {
     hasStatus(VoteStatus.NOT_VOTED)
     feeWithinRange(_fee)
     {
-        votes[msg.sender] = Vote(_fee, VoteStatus.VOTED);
-        emit VoteIssued(msg.sender, _fee);
+        (
+            bool _isParticipant,
+            bool _isModerator,
+            uint256 _lastParticipatedQuarter,
+            uint256 _lockedDgdStake,
+            uint256 _lockedDgd,
+            uint256 _reputationPoints,
+            uint256 _quarterPoints
+        ) = digixDaoInfoContract.readUserInfo(msg.sender);
+        votes[msg.sender] = Vote(_fee, VoteStatus.VOTED, _lockedDgdStake);
+        emit VoteIssued(msg.sender, _fee, _lockedDgdStake);
     }
 
     /**
@@ -128,7 +140,7 @@ contract BurnFeePoll {
     }
 
     modifier isQuarterParticipant() {
-        require(digixDaoContract.isParticipant(msg.sender));
+        require(digixDaoInfoContract.isParticipant(msg.sender));
         _;
     }
 }

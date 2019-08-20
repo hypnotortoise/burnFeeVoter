@@ -63,6 +63,7 @@ class App extends Component {
       votesInstance: undefined,
       voteFee: undefined,
       voteState: "NOT_VOTED",
+      voteWeight: undefined,
       etherscanLink: etherscanBaseUrl,
       votes: {},
       account: null,
@@ -115,6 +116,7 @@ class App extends Component {
       var voter = event.returnValues.voter;
       event.returnValues['voteFee'] = event.returnValues.fee;
       event.returnValues['voteState'] = "VOTED";
+      event.returnValues['voteWeight'] = event.returnValues.lockedDgdStake;
 
       var votes = component.state.votes;
       votes[voter] = event.returnValues;
@@ -133,6 +135,7 @@ class App extends Component {
       var voter = event.returnValues.voter;
       event.returnValues['voteFee'] = event.returnValues.fee;
       event.returnValues['voteState'] = "VOTED";
+      event.returnValues['voteWeight'] = component.state.votes[voter].voteWeight;
 
       var votes = component.state.votes;
       votes[voter] = event.returnValues;
@@ -149,8 +152,9 @@ class App extends Component {
     component.state.votesInstance.events.VoteCancelled({fromBlock: 0, toBlock: 'latest'})
     .on('data', async (event) => {
       var voter = event.returnValues.voter;
-      event.returnValues['voteState'] = "CANCELLED";
       event.returnValues['voteFee'] = component.state.votes[voter].voteFee;
+      event.returnValues['voteState'] = "CANCELLED";
+      event.returnValues['voteWeight'] = component.state.votes[voter].voteWeight;
 
       var votes = component.state.votes;
       votes[voter] = event.returnValues;
@@ -268,6 +272,7 @@ class App extends Component {
             <BootstrapTable data={Object.values(this.state.votes)} striped hover>
               <TableHeaderColumn isKey dataField='voter'>Voter</TableHeaderColumn>
               <TableHeaderColumn dataField='voteFee'>Voted(in %)</TableHeaderColumn>
+              <TableHeaderColumn dataField='voteWeight'>Weight</TableHeaderColumn>
             </BootstrapTable>
           </Card.Body>
           </Card>
