@@ -15,6 +15,45 @@ import BootstrapTable from 'react-bootstrap-table/lib/BootstrapTable';
 import TableHeaderColumn from 'react-bootstrap-table/lib/TableHeaderColumn';
 
 const etherscanBaseUrl = "https://rinkeby.etherscan.io";
+const priceAPIBaseUrl = "https://api.cryptowat.ch/";
+
+
+const CancelButton = ({voteState}) => {
+  if (voteState === "CANCELLED") {
+    return <Button type="submit" disabled>Cancel Vote</Button>;
+  } else {
+    return <Button type="submit">Cancel Vote</Button>;
+  }
+}
+
+const VoteButton = ({voteState}) => {
+  if (voteState === "CANCELLED") {
+    return <Button type="submit" disabled>{(voteState === "NOT_VOTED") ? "Vote" : "Change Vote"}</Button>;
+  } else {
+    return <Button type="submit">{(voteState === "NOT_VOTED") ? "Vote" : "Change Vote"}</Button>;
+  }
+}
+
+const VoteHeader = ({voteState}) => {
+   switch (voteState) {
+      case "NOT_VOTED":
+      case "CANCELLED":
+        return <Card.Header>Issue Vote</Card.Header>;
+      case "VOTED":
+        return <Card.Header>Change Vote</Card.Header>;
+      default:
+        break;
+    }
+}
+
+function stats(props) {
+
+}
+
+function marketPrice() {
+
+  var markets = "markets/binance/dgdeth/price";
+}
 
 class App extends Component {
   constructor(props) {
@@ -71,7 +110,7 @@ class App extends Component {
 
   addEventListener(component) {
     // get all issued votes events
-    this.state.votesInstance.events.VoteIssued({fromBlock: 0, toBlock: 'latest'})
+    component.state.votesInstance.events.VoteIssued({fromBlock: 0, toBlock: 'latest'})
     .on('data', async (event) => {
       var voter = event.returnValues.voter;
       event.returnValues['voteFee'] = event.returnValues.fee;
@@ -89,7 +128,7 @@ class App extends Component {
     .on('error', console.error);
 
     // get all changed votes events
-    this.state.votesInstance.events.VoteChanged({fromBlock: 0, toBlock: 'latest'})
+    component.state.votesInstance.events.VoteChanged({fromBlock: 0, toBlock: 'latest'})
     .on('data', async (event) => {
       var voter = event.returnValues.voter;
       event.returnValues['voteFee'] = event.returnValues.fee;
@@ -107,7 +146,7 @@ class App extends Component {
     .on('error', console.error);
 
     // get all cancelled votes events
-    this.state.votesInstance.events.VoteCancelled({fromBlock: 0, toBlock: 'latest'})
+    component.state.votesInstance.events.VoteCancelled({fromBlock: 0, toBlock: 'latest'})
     .on('data', async (event) => {
       var voter = event.returnValues.voter;
       event.returnValues['voteState'] = "CANCELLED";
@@ -178,26 +217,6 @@ class App extends Component {
       return <div>Loading Web3, accounts, and contract...</div>;
     }
 
-    var voteButton, cancelButton;
-    if (this.state.voteState === "CANCELLED") {
-      voteButton =  <Button type="submit" disabled>{(this.state.voteState === "NOT_VOTED") ? "Vote" : "Change Vote"}</Button>
-      cancelButton = <Button type="submit" disabled>Cancel Vote</Button>;
-    } else {
-      voteButton =  <Button type="submit">{(this.state.voteState === "NOT_VOTED") ? "Vote" : "Change Vote"}</Button>
-      cancelButton = <Button type="submit">Cancel Vote</Button>;
-    }
-
-    let cardHeader = (() => {
-      switch (this.state.voteState) {
-        case "NOT_VOTED":
-        case "CANCELLED":
-          return <Card.Header>Issue Vote</Card.Header>
-        case "VOTED":
-          return <Card.Header>Change Vote</Card.Header>
-        default:
-          break;
-      }
-    })();
     return (
       <div className="App">
         <Container>
@@ -210,29 +229,34 @@ class App extends Component {
           <Row className="justify-content-md-center">
           <CardGroup>
           <Card>
-            { cardHeader }
+            <VoteHeader voteState={this.state.voteState} />
             <Card.Body>
               <Form onSubmit={(this.state.voteState === "VOTED") ? this.handleChangeVote : this.handleIssueVote}>
                 <Form.Group controlId="fromIssueVote">
                   <Form.Control
                   type="range"
                   name="voteFee"
-                  value={this.state.voteFee}
-                  placeholder={(this.state.voteState === "VOTED") ? this.state.voteFee : 0}
+                  value={this.state.voteFee || "20"}
                   onChange={this.handleChange}
                   min="0"
                   max="45"
                   step="1"
                   disabled={(this.state.voteState === "CANCELLED")}
                 />
-                <Form.Text>Vote for Burn Fee ({this.state.voteFee}%)</Form.Text>
-                {voteButton}
+                <Form.Text>Vote for Burn Fee ({this.state.voteFee || "20"}%)</Form.Text>
+                <VoteButton voteState={this.state.voteState} />
                 </Form.Group>
               </Form>
               <Form onSubmit={this.handleCancelVote}>
-                {cancelButton}
+                <CancelButton voteState={this.state.voteState} />
               </Form>
-              {(this.state.voteState === "CANCELLED") ? <Card.Text className="mt-5 alert alert-info">You previously cancelled your vote.<br />Can't vote again</Card.Text> : ""}
+              {(this.state.voteState === "CANCELLED") ? (
+                <Card.Text className="mt-5 alert alert-info">
+                  You previously cancelled your vote.<br />
+                  Can't vote again
+                  </Card.Text>
+                ) : null
+              }
             </Card.Body>
           </Card>
           </CardGroup>
