@@ -17,6 +17,23 @@ import TableHeaderColumn from 'react-bootstrap-table/lib/TableHeaderColumn';
 const etherscanBaseUrl = "https://rinkeby.etherscan.io";
 const priceAPIBaseUrl = "https://api.cryptowat.ch/";
 
+// const daoStakeStorageContractAddress = "0x320051bbd4eee344bb86f0a858d03595837463ef";
+// const DAO_STAKE_ABI = [
+//   {
+//     "constant": true,
+//     "inputs": [],
+//     "name": "totalLockedDGDStake",
+//     "outputs": [
+//       {
+//         "name": "",
+//         "type": "uint256"
+//       }
+//     ],
+//     "payable": false,
+//     "stateMutability": "view",
+//     "type": "function"
+//   }
+// ]
 
 const CancelButton = ({voteState}) => {
   if (voteState === "CANCELLED") {
@@ -46,8 +63,15 @@ const VoteHeader = ({voteState}) => {
     }
 }
 
-function stats(props) {
-
+const Stats = ({avg}) => {
+  return (
+    <Card>
+      <Card.Header>Vote Statistics</Card.Header>
+      <Card.Body>
+        Voted Fee Average: {avg}
+      </Card.Body>
+    </Card>
+  );
 }
 
 function marketPrice() {
@@ -65,6 +89,7 @@ class App extends Component {
       voteState: "NOT_VOTED",
       voteWeight: undefined,
       etherscanLink: etherscanBaseUrl,
+      avg: undefined,
       votes: {},
       account: null,
       web3: null
@@ -96,6 +121,7 @@ class App extends Component {
       // example of interacting with the contract's methods.
       this.setState({ votesInstance: instance, web3: web3, account: accounts[0] });
       this.addEventListener(this);
+      this.calcAvg();
     } catch (error) {
       // Catch any errors for any of the above operations.
       alert(
@@ -167,7 +193,7 @@ class App extends Component {
     })
     .on('error', console.error);
 
-    console.log(component.state.votes)
+    // console.log(component.state.votes)
   }
 
   async handleIssueVote(event) {
@@ -191,6 +217,30 @@ class App extends Component {
       event.preventDefault();
       let res = await this.state.votesInstance.methods.cancelVote().send({from: this.state.account});
       this.setLastTransactionDetails(res);
+    }
+  }
+
+  async calcAvg() {
+    if (typeof this.state.votesInstance !== 'undefined') {
+      // var DigixDAOStakeStorage = new this.state.web3.eth.Contract(DAO_STAKE_ABI, daoStakeStorageContractAddress);
+      // var totalLockedWeight = await DigixDAOStakeStorage.methods.totalLockedDGDStake().call({from: this.state.account});
+      setInterval(() => {
+        var avg = 0;
+        var [totalVotedWeight, i] = [0, 0];
+        var votesWithoutCancelled = Object.values(this.state.votes).filter(vote => vote.voteState !== "CANCELLED");
+        while(votesWithoutCancelled[i]) {
+          totalVotedWeight += parseInt(votesWithoutCancelled[i].voteWeight);
+          i++;
+        }
+        console.log(totalVotedWeight);
+        if (totalVotedWeight > 0) {
+          votesWithoutCancelled.forEach((vote) => {
+            avg += parseFloat(parseInt(vote.voteFee) * parseInt(vote.voteWeight) / totalVotedWeight);
+            console.log(avg);
+          });
+          this.setState({avg: String(avg)});
+        }
+      }, 5000);
     }
   }
 
@@ -276,6 +326,9 @@ class App extends Component {
             </BootstrapTable>
           </Card.Body>
           </Card>
+          </Row>
+          <Row className="justify-content-md-center">
+          <Stats avg={this.state.avg} />
           </Row>
         </Container>
       </div>
