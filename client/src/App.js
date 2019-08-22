@@ -1,21 +1,24 @@
-import React, { Component } from 'react';
+import React, { Component } from "react";
+import axios from "axios";
 import VoteContract from "./contracts/BurnFeePoll.json";
+import Web3 from "web3";
 import getWeb3 from "./utils/getWeb3";
 import './App.css';
 
-import Button from 'react-bootstrap/Button';
-import Form from 'react-bootstrap/Form';
-import Container from 'react-bootstrap/Container';
-import Row from 'react-bootstrap/Row';
-import Card from 'react-bootstrap/Card';
-import CardGroup from 'react-bootstrap/CardGroup';
-import Image from 'react-bootstrap/Image';
+import Button from "react-bootstrap/Button";
+import Form from "react-bootstrap/Form";
+import Container from "react-bootstrap/Container";
+import Row from "react-bootstrap/Row";
+import Card from "react-bootstrap/Card";
+import CardGroup from "react-bootstrap/CardGroup";
+import Image from "react-bootstrap/Image";
 
-import BootstrapTable from 'react-bootstrap-table/lib/BootstrapTable';
-import TableHeaderColumn from 'react-bootstrap-table/lib/TableHeaderColumn';
+import BootstrapTable from "react-bootstrap-table/lib/BootstrapTable";
+import TableHeaderColumn from "react-bootstrap-table/lib/TableHeaderColumn";
 
+const a = require('awaiting');
 const etherscanBaseUrl = "https://rinkeby.etherscan.io";
-const priceAPIBaseUrl = "https://api.cryptowat.ch/";
+// axios.defaults.baseURL = "https://api.cryptowat.ch";
 
 // const daoStakeStorageContractAddress = "0x320051bbd4eee344bb86f0a858d03595837463ef";
 // const DAO_STAKE_ABI = [
@@ -63,20 +66,36 @@ const VoteHeader = ({voteState}) => {
     }
 }
 
-const Stats = ({avg}) => {
+const Stats = ({voteAvg, marketPrice, daoBalance}) => {
   return (
     <Card>
       <Card.Header>Vote Statistics</Card.Header>
       <Card.Body>
-        Voted Fee Average: {avg}
+        Average Voted Fee: {voteAvg}
+        <p />
+        Average Exchange Price: {parseFloat(marketPrice).toPrecision(5)} DGD/ETH
+        <p />
+        Total ETH in MultiSig: {daoBalance}
+        <p />
+        Expected Average Exchange Price based on Voted Fee: {
+            (
+              parseFloat(daoBalance/2e6)
+              - parseFloat(daoBalance/2e6)*voteAvg/100
+            )
+        }
+        <p />
+        Surplus over current Exchange Price: {
+          (
+            (
+              parseFloat(daoBalance/2e6)
+              - parseFloat(daoBalance/2e6)*voteAvg/100
+            )
+            - parseFloat(marketPrice).toPrecision(5)
+          )
+          }
       </Card.Body>
     </Card>
   );
-}
-
-function marketPrice() {
-
-  var markets = "markets/binance/dgdeth/price";
 }
 
 class App extends Component {
@@ -89,10 +108,12 @@ class App extends Component {
       voteState: "NOT_VOTED",
       voteWeight: undefined,
       etherscanLink: etherscanBaseUrl,
-      avg: undefined,
+      voteAvg: undefined,
       votes: {},
       account: null,
-      web3: null
+      web3: null,
+      marketPrice: undefined,
+      daoBalance: undefined
     };
 
     this.handleIssueVote = this.handleIssueVote.bind(this);
@@ -121,7 +142,9 @@ class App extends Component {
       // example of interacting with the contract's methods.
       this.setState({ votesInstance: instance, web3: web3, account: accounts[0] });
       this.addEventListener(this);
-      this.calcAvg();
+      this.votingAvg();
+      this.getMarketPrice();
+      this.getDAOBalance();
     } catch (error) {
       // Catch any errors for any of the above operations.
       alert(
@@ -220,30 +243,6 @@ class App extends Component {
     }
   }
 
-  async calcAvg() {
-    if (typeof this.state.votesInstance !== 'undefined') {
-      // var DigixDAOStakeStorage = new this.state.web3.eth.Contract(DAO_STAKE_ABI, daoStakeStorageContractAddress);
-      // var totalLockedWeight = await DigixDAOStakeStorage.methods.totalLockedDGDStake().call({from: this.state.account});
-      setInterval(() => {
-        var avg = 0;
-        var [totalVotedWeight, i] = [0, 0];
-        var votesWithoutCancelled = Object.values(this.state.votes).filter(vote => vote.voteState !== "CANCELLED");
-        while(votesWithoutCancelled[i]) {
-          totalVotedWeight += parseInt(votesWithoutCancelled[i].voteWeight);
-          i++;
-        }
-        console.log(totalVotedWeight);
-        if (totalVotedWeight > 0) {
-          votesWithoutCancelled.forEach((vote) => {
-            avg += parseFloat(parseInt(vote.voteFee) * parseInt(vote.voteWeight) / totalVotedWeight);
-            console.log(avg);
-          });
-          this.setState({avg: String(avg)});
-        }
-      }, 5000);
-    }
-  }
-
   // update etherscanLink
   setLastTransactionDetails(res) {
     if(res.tx !== 'undefined')
@@ -254,6 +253,90 @@ class App extends Component {
     {
       this.setState({etherscanLink: etherscanBaseUrl})
     }
+  }
+
+  // Calculate Voting Average
+  async votingAvg() {
+    if (typeof this.state.votesInstance !== 'undefined') {
+      // var DigixDAOStakeStorage = new this.state.web3.eth.Contract(DAO_STAKE_ABI, daoStakeStorageContractAddress);
+      // var totalLockedWeight = await DigixDAOStakeStorage.methods.totalLockedDGDStake().call({from: this.state.account});
+      setInterval(() => {
+        var voteAvg = 0;
+        var [totalVotedWeight, i] = [0, 0];
+        var votesWithoutCancelled = Object.values(this.state.votes).filter(vote => vote.voteState !== "CANCELLED");
+        while(votesWithoutCancelled[i]) {
+          totalVotedWeight += parseInt(votesWithoutCancelled[i].voteWeight);
+          i++;
+        }
+        // console.log(totalVotedWeight);
+        if (totalVotedWeight > 0) {
+          votesWithoutCancelled.forEach((vote) => {
+            voteAvg += parseFloat(parseInt(vote.voteFee) * parseInt(vote.voteWeight) / totalVotedWeight);
+          });
+          this.setState({voteAvg: parseInt(voteAvg)});
+        }
+      }, 1000);
+    }
+  }
+
+  // fetch current average market price for ETH/DGD pair
+  async getMarketPrice() {
+    try {
+      const ax = axios.create({ timeout: 1000 });
+      var asset = await ax.get('/assets/dgd')
+      .then(
+        (res) => { return res.data.result },
+        (err) => { if (err.response) { console.error(err.response) } }
+      );
+
+      var exchanges = [];
+      asset.markets.base.forEach((market) => {
+        if (market.pair === "dgdeth") {
+          exchanges.push(market);
+        }
+      });
+      // console.log(exchanges);
+
+      var sum_exchange_price = 0;
+      var urls = [];
+      exchanges.forEach((exchange) => {urls.push(exchange.route.replace("https://api.cryptowat.ch",""))});
+      // console.log(urls);
+      var prices = await a.map(urls, 3, async(url) => {
+        var data = await ax.get(url + "/price")
+        .then(
+          (res) => { return res.data.result },
+          (err) => { if (err.response) { console.error(err.response) } }
+        );
+        // console.log(data);
+        return data;
+      });
+      // console.log(prices);
+
+      prices.forEach((priceData) => {
+        sum_exchange_price = sum_exchange_price + priceData.price;
+      });
+      // console.log(sum_exchange_price);
+
+      this.setState({marketPrice: sum_exchange_price / exchanges.length});
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  // get ETH balance from DAO multi-sig contract
+  async getDAOBalance() {
+    const daoMultiSigContractAddress = "0x75bA02c5bAF9cc3E9fE01C51Df3cB1437E8690D4";
+    let web3 = undefined;
+    if (this.state.networkId !== 1) {
+      let provider = new Web3.providers.HttpProvider(
+        "https://mainnet.infura.io/v3/8aad543c526449b78cacb050cb44f158"
+      );
+      web3 = new Web3(provider);
+    } else {
+      web3 = this.state.web3;
+    }
+    var daoBalance = await web3.eth.getBalance(daoMultiSigContractAddress);
+    this.setState({daoBalance: web3.utils.fromWei(daoBalance)});
   }
 
   handleChange(event) {
@@ -280,7 +363,7 @@ class App extends Component {
               src="logo.svg"
           />
           </Row>
-          <Row className="justify-content-md-center">
+          <Row className="pb-3 justify-content-md-center">
           <CardGroup>
           <Card>
             <VoteHeader voteState={this.state.voteState} />
@@ -315,20 +398,20 @@ class App extends Component {
           </Card>
           </CardGroup>
           </Row>
-          <Row className="justify-content-md-center">
+          <Row className="pb-3 justify-content-md-center">
           <Card>
-          <Card.Header>Issued Votes</Card.Header>
+          <Card.Header>Issued Votes (excludes votes cancelled)</Card.Header>
           <Card.Body>
-            <BootstrapTable data={Object.values(this.state.votes)} striped hover>
+            <BootstrapTable version='4' data={Object.values(this.state.votes).filter(vote => vote.voteState !== "CANCELLED")} striped hover>
               <TableHeaderColumn isKey dataField='voter'>Voter</TableHeaderColumn>
-              <TableHeaderColumn dataField='voteFee'>Voted(in %)</TableHeaderColumn>
-              <TableHeaderColumn dataField='voteWeight'>Weight</TableHeaderColumn>
+              <TableHeaderColumn dataField='voteFee'>Fee(%)</TableHeaderColumn>
+              <TableHeaderColumn dataField='voteWeight'>Voting Weight</TableHeaderColumn>
             </BootstrapTable>
           </Card.Body>
           </Card>
           </Row>
           <Row className="justify-content-md-center">
-          <Stats avg={this.state.avg} />
+          <Stats voteAvg={this.state.voteAvg} marketPrice={this.state.marketPrice} daoBalance={this.state.daoBalance} />
           </Row>
         </Container>
       </div>

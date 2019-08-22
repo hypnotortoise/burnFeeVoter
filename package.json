@@ -14,6 +14,7 @@
   "license": "ISC",
   "dependencies": {
     "async": "^3.1.0",
+    "esm": "^3.2.25",
     "openzeppelin-solidity": "2.3.0",
     "web3": "^1.2.1"
   }

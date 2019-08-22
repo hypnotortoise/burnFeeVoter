@@ -6858,10 +6858,28 @@
       "links": {},
       "address": "0xe33662Ee7Bdeb37fA5bB56201b9b18506cD86Dca",
       "transactionHash": "0x09b14f9f28369a8b4a4f7984f7c2d98a5527491337d6f6de82f4dfff0fbbe132"
+    },
+    "1566393668756": {
+      "events": {},
+      "links": {},
+      "address": "0xe33662Ee7Bdeb37fA5bB56201b9b18506cD86Dca",
+      "transactionHash": "0x09b14f9f28369a8b4a4f7984f7c2d98a5527491337d6f6de82f4dfff0fbbe132"
+    },
+    "1566468360958": {
+      "events": {},
+      "links": {},
+      "address": "0xBe841AF5AbD2A28493DD50ba1740199992E97d15",
+      "transactionHash": "0x0260eb9bd9625e581a6a364c23964d0215b418ac3843a7417c9253668e173f6d"
+    },
+    "1566479970814": {
+      "events": {},
+      "links": {},
+      "address": "0x9c6f076855d3643AB52772F2108D4046a10049EC",
+      "transactionHash": "0xd593f41d5a2b0025e243259855554a101c295ae224d991b9105727697d89da38"
     }
   },
   "schemaVersion": "3.0.12",
-  "updatedAt": "2019-08-20T10:33:57.456Z",
+  "updatedAt": "2019-08-22T13:21:00.011Z",
   "devdoc": {
     "methods": {
       "cancelVote()": {
