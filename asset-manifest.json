@@ -1,15 +1,15 @@
 {
   "files": {
-    "main.css": "/burnfeevoter/static/css/main.3e88a9a7.chunk.css",
-    "main.js": "/burnfeevoter/static/js/main.ec8f1f05.chunk.js",
-    "main.js.map": "/burnfeevoter/static/js/main.ec8f1f05.chunk.js.map",
-    "runtime~main.js": "/burnfeevoter/static/js/runtime~main.3b6ab664.js",
-    "runtime~main.js.map": "/burnfeevoter/static/js/runtime~main.3b6ab664.js.map",
-    "static/js/2.70852674.chunk.js": "/burnfeevoter/static/js/2.70852674.chunk.js",
-    "static/js/2.70852674.chunk.js.map": "/burnfeevoter/static/js/2.70852674.chunk.js.map",
-    "index.html": "/burnfeevoter/index.html",
-    "precache-manifest.ed94cdb7633fe71538926ff1d2f40a17.js": "/burnfeevoter/precache-manifest.ed94cdb7633fe71538926ff1d2f40a17.js",
-    "service-worker.js": "/burnfeevoter/service-worker.js",
-    "static/css/main.3e88a9a7.chunk.css.map": "/burnfeevoter/static/css/main.3e88a9a7.chunk.css.map"
+    "main.css": "/burnFeeVoter/static/css/main.3e88a9a7.chunk.css",
+    "main.js": "/burnFeeVoter/static/js/main.f23c4ed7.chunk.js",
+    "main.js.map": "/burnFeeVoter/static/js/main.f23c4ed7.chunk.js.map",
+    "runtime~main.js": "/burnFeeVoter/static/js/runtime~main.e5b8f2cd.js",
+    "runtime~main.js.map": "/burnFeeVoter/static/js/runtime~main.e5b8f2cd.js.map",
+    "static/js/2.822361a2.chunk.js": "/burnFeeVoter/static/js/2.822361a2.chunk.js",
+    "static/js/2.822361a2.chunk.js.map": "/burnFeeVoter/static/js/2.822361a2.chunk.js.map",
+    "index.html": "/burnFeeVoter/index.html",
+    "precache-manifest.93c0925cc7abc80fe9dfd61f6002cd93.js": "/burnFeeVoter/precache-manifest.93c0925cc7abc80fe9dfd61f6002cd93.js",
+    "service-worker.js": "/burnFeeVoter/service-worker.js",
+    "static/css/main.3e88a9a7.chunk.css.map": "/burnFeeVoter/static/css/main.3e88a9a7.chunk.css.map"
   }
 }
