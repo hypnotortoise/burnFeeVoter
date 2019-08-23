@@ -1,7 +1,7 @@
 {
   "name": "BurnFeePoll",
   "version": "0.1.0",
-  "homepage": "http://hypnotortoise.github.io/burnfeevoter",
+  "homepage": "http://hypnotortoise.github.io/burnFeeVoter",
   "private": true,
   "dependencies": {
     "awaiting": "^3.0.0",
