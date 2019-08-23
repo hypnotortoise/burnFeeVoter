@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { Component, useState } from "react";
 import axios from "axios";
 import VoteContract from "./contracts/BurnFeePoll.json";
 import Web3 from "web3";
@@ -6,11 +6,12 @@ import getWeb3 from "./utils/getWeb3";
 import './App.css';
 
 import Button from "react-bootstrap/Button";
+import Modal from "react-bootstrap/Modal";
 import Form from "react-bootstrap/Form";
 import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
 import Card from "react-bootstrap/Card";
-import CardGroup from "react-bootstrap/CardGroup";
+import CardDeck from "react-bootstrap/CardDeck";
 import Image from "react-bootstrap/Image";
 
 import BootstrapTable from "react-bootstrap-table/lib/BootstrapTable";
@@ -38,19 +39,43 @@ const etherscanBaseUrl = "https://rinkeby.etherscan.io";
 //   }
 // ]
 
-const CancelButton = ({voteState}) => {
+const CancelButton = ({voteState, cancelAction}) => {
+  const [show, setShow] = useState(false);
+
+  const handleClose = () => setShow(false);
+  const handleShow = () => setShow(true);
+
+
   if (voteState === "CANCELLED") {
-    return <Button type="submit" disabled>Cancel Vote</Button>;
+    return <Button variant="light" type="submit" disabled>Cancel Vote</Button>;
   } else {
-    return <Button type="submit">Cancel Vote</Button>;
+    return (
+      <>
+      <Button variant="light" onClick={handleShow}>Cancel Vote</Button>
+      <Modal show={show} onHide={handleClose}>
+        <Modal.Header CancelButton>
+          <Modal.Title>Cancel Vote</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>Warning! If you cancel your vote you can't vote again! Are you sure you want to continue?</Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleClose}>
+            No
+          </Button>
+          <Button variant="primary" type="submit" onClick={cancelAction}>
+            Yes
+          </Button>
+        </Modal.Footer>
+      </Modal>
+      </>
+    );
   }
 }
 
 const VoteButton = ({voteState}) => {
   if (voteState === "CANCELLED") {
-    return <Button type="submit" disabled>{(voteState === "NOT_VOTED") ? "Vote" : "Change Vote"}</Button>;
+    return <Button variant="light" type="submit" disabled>{(voteState === "NOT_VOTED") ? "Vote" : "Change Vote"}</Button>;
   } else {
-    return <Button type="submit">{(voteState === "NOT_VOTED") ? "Vote" : "Change Vote"}</Button>;
+    return <Button variant="light" type="submit">{(voteState === "NOT_VOTED") ? "Vote" : "Change Vote"}</Button>;
   }
 }
 
@@ -68,7 +93,7 @@ const VoteHeader = ({voteState}) => {
 
 const Stats = ({voteAvg, marketPrice, daoBalance}) => {
   return (
-    <Card>
+    <Card className="bg-dark text-white">
       <Card.Header>Vote Statistics</Card.Header>
       <Card.Body>
         Average Voted Fee: {voteAvg}
@@ -357,15 +382,15 @@ class App extends Component {
     return (
       <div className="App">
         <Container>
-          <Row className="justify-content-md-center">
+          <Row className="pb-3 justify-content-md-center">
           <Image
               className="App-logo"
               src="logo.svg"
           />
           </Row>
           <Row className="pb-3 justify-content-md-center">
-          <CardGroup>
-          <Card>
+          <CardDeck>
+          <Card className="bg-dark text-white">
             <VoteHeader voteState={this.state.voteState} />
             <Card.Body>
               <Form onSubmit={(this.state.voteState === "VOTED") ? this.handleChangeVote : this.handleIssueVote}>
@@ -384,34 +409,32 @@ class App extends Component {
                 <VoteButton voteState={this.state.voteState} />
                 </Form.Group>
               </Form>
-              <Form onSubmit={this.handleCancelVote}>
-                <CancelButton voteState={this.state.voteState} />
+              <Form>
+                <CancelButton voteState={this.state.voteState} cancelAction={this.handleCancelVote} />
               </Form>
               {(this.state.voteState === "CANCELLED") ? (
-                <Card.Text className="mt-5 alert alert-info">
-                  You previously cancelled your vote.<br />
-                  Can't vote again
+                  <Card.Text className="mt-5 alert alert-info">
+                    You previously cancelled your vote.<br />
+                    Can't vote again
                   </Card.Text>
                 ) : null
               }
             </Card.Body>
           </Card>
-          </CardGroup>
+          <Stats voteAvg={this.state.voteAvg} marketPrice={this.state.marketPrice} daoBalance={this.state.daoBalance} />
+          </CardDeck>
           </Row>
           <Row className="pb-3 justify-content-md-center">
-          <Card>
+          <Card className="w-100 bg-dark text-white">
           <Card.Header>Issued Votes (excludes votes cancelled)</Card.Header>
           <Card.Body>
-            <BootstrapTable version='4' data={Object.values(this.state.votes).filter(vote => vote.voteState !== "CANCELLED")} striped hover>
+            <BootstrapTable className="table-secondary" version='4' data={Object.values(this.state.votes).filter(vote => vote.voteState !== "CANCELLED")} striped hover>
               <TableHeaderColumn isKey dataField='voter'>Voter</TableHeaderColumn>
               <TableHeaderColumn dataField='voteFee'>Fee(%)</TableHeaderColumn>
               <TableHeaderColumn dataField='voteWeight'>Voting Weight</TableHeaderColumn>
             </BootstrapTable>
           </Card.Body>
           </Card>
-          </Row>
-          <Row className="justify-content-md-center">
-          <Stats voteAvg={this.state.voteAvg} marketPrice={this.state.marketPrice} daoBalance={this.state.daoBalance} />
           </Row>
         </Container>
       </div>

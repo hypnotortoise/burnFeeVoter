@@ -1,6 +1,7 @@
 {
-  "name": "client",
+  "name": "BurnFeePoll",
   "version": "0.1.0",
+  "homepage": "http://hypnotortoise.gitlab.io/burnfeevoter",
   "private": true,
   "dependencies": {
     "awaiting": "^3.0.0",
