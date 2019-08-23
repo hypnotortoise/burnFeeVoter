@@ -30,8 +30,7 @@ contract BurnFeePoll {
     * State variables
     */
     address public owner = msg.sender;
-    address daoInfoAddress = 0x403cc7802725928652a3d116Bb1781005e2e76d3;
-    DigixDaoInfo digixDaoInfoContract = DigixDaoInfo(daoInfoAddress);
+    DigixDaoInfo digixDaoInfoContract;
 
     enum VoteStatus { NOT_VOTED, VOTED, CANCELLED }
 
@@ -56,6 +55,7 @@ contract BurnFeePoll {
     event VoteIssued(address voter, uint8 fee, uint256 lockedDgdStake);
     event VoteChanged(address voter, uint8 fee);
     event VoteCancelled(address voter);
+    event ChangedInfoContract(address sender, address newInfoAddress);
 
     /**
     * @dev constructor
@@ -63,12 +63,23 @@ contract BurnFeePoll {
     constructor() public {}
 
     /**
+     * @dev setInfoContract(): update external DaoInformation contract location
+     * @param _address new contract address
+     */
+    function setInfoContract(address _address)
+    public
+    isContractOwner()
+    isDeployedContract(_address)
+    {
+        digixDaoInfoContract = DigixDaoInfo(_address);
+        emit ChangedInfoContract(msg.sender, _address);
+    }
+
+    /**
     * @dev issueVote(): instantiates a new vote
     * @param _fee voted fee
     */
-    function issueVote (
-        uint8 _fee
-    )
+    function issueVote (uint8 _fee)
     public
     beforeDeadline()
     isQuarterParticipant()
@@ -119,6 +130,20 @@ contract BurnFeePoll {
     /**
     * Modifiers
     */
+    modifier isDeployedContract(address _address) {
+      uint32 size;
+      assembly {
+        size := extcodesize(_address)
+      }
+      require(size > 0);
+      _;
+    }
+
+    modifier isContractOwner() {
+        require(msg.sender == owner);
+        _;
+    }
+
     modifier beforeDeadline() {
         // @dev Voting deadline for the poll. No more vote changes alllowed after this.
         // @dev Hardcoded to: now + 90 days
