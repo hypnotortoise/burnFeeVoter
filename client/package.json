@@ -18,7 +18,8 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "deploy": "gh-pages -d build --repo https://github.com/hypnotortoise/burnfeevoter",
+    "deploy": "gh-pages -d build --branch gh-pages --repo https://github.com/hypnotortoise/burnFeeVoter",
+    "clean": "gh-pages -d build --branch gh-pages clean",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
