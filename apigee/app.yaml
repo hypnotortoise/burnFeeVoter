@@ -1,0 +1,8 @@
+runtime: node
+runtimeVersion: 12
+application: cw-proxy
+env:
+  - name: NODE_ENV
+    value: production
+  - name: LOG_LEVEL
+    value: 3

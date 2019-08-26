@@ -19,7 +19,7 @@ import TableHeaderColumn from "react-bootstrap-table/lib/TableHeaderColumn";
 
 const a = require('awaiting');
 const etherscanBaseUrl = "https://rinkeby.etherscan.io";
-// axios.defaults.baseURL = "https://api.cryptowat.ch";
+axios.defaults.baseURL = "https://hypnotortoise-eval-prod.apigee.net/cw";
 
 // const daoStakeStorageContractAddress = "0x320051bbd4eee344bb86f0a858d03595837463ef";
 // const DAO_STAKE_ABI = [
