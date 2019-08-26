@@ -7,9 +7,9 @@ There's no centralized actor in the voting process and every voting action is do
 ## Components
 Two components are mainly used for casting a vote:
 * Smart Contract: [BurnFeePoll](https://gitlab.com/hypnotortoise/burnFeeVoter/blob/dev/contracts/BurnFeePoll.sol)
- * Checks DAO pariticpation status of msg.sender
+ * Checks DAO pariticpation status of `msg.sender`
  * Allows Voting/Vote Changes/Vote Cancellation
- * Stores vote, status & lockedDgdStake of each voter in the contract data
+ * Stores vote, status & lockedDgdStake of each voter on chain
 
 * Web Frontend: [BurnFeePoll](https://gitlab.com/hypnotortoise/burnFeeVoter/tree/dev/client)
  * React App for triggering the votes. Interfaces with Metamask to allow participants to vote.
