@@ -13,12 +13,12 @@
     "react-bootstrap-table": "^4.3.1",
     "react-dom": "^16.9.0",
     "react-scripts": "^3.1.1",
-    "web3": "^1.2.1"
+    "web3": "1.0.0-beta.51"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "pre-deploy": "npm run build",
+    "pre-deploy": "yarn build",
     "deploy": "gh-pages -d build --branch gh-pages --repo https://github.com/hypnotortoise/burnFeeVoter",
     "clean": "gh-pages -d build --branch gh-pages--repo https://github.com/hypnotortoise/burnFeeVoter clean",
     "test": "react-scripts test",
