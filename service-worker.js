@@ -14,7 +14,7 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/4.3.1/workbox-sw.js");
 
 importScripts(
-  "/burnFeeVoter/precache-manifest.bb32cfc23fc8641e30cc72319019a6a9.js"
+  "/burnFeeVoter/precache-manifest.01420871631a4cd90d00bfb14a8e2511.js"
 );
 
 self.addEventListener('message', (event) => {
