@@ -19,13 +19,25 @@ module.exports = {
       network_id: "4",
       provider: function() {
         return new HDWalletProvider(secrets.mnemonic, "https://rinkeby.infura.io/v3/" + secrets.infuraApiKey);
-      }
+      },
+      gas: 6850000,
+      gasPrice: 2 * (10 ** 9)
+    },
+    kovan: {
+      network_id: "42",
+      provider: function() {
+        return new HDWalletProvider(secrets.mnemonic, "https://kovan.infura.io/v3/" + secrets.infuraApiKey);
+      },
+      gas: 6850000,
+      gasPrice: 2 * (10 ** 9)
     },
     mainnet: {
       network_id: "1",
       provider: function() {
         return new HDWalletProvider(secrets.mnemonic, "https://mainnet.infura.io/v3/" + secrets.infuraApiKey);
-      }
+      },
+      gas: 6850000,
+      gasPrice: 2 * (10 ** 9)
     }
   }
 };
