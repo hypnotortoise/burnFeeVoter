@@ -11,7 +11,7 @@ before_script:
 pages:
   stage: deploy
   script:
-    - find client -type f -regex '.*\.\(htm\|html\|txt\|text\|js\|css\)$' -exec gzip -f -k {} \;
+    - find . -type f -regex '.*\.\(htm\|html\|txt\|text\|js\|css\)$' -exec gzip -f -k {} \;
     - CI=true yarn pre-deploy
     - mv build ../public
   artifacts:
