@@ -1,16 +1,18 @@
 {
-  "name": "react",
+  "name": "burnFeeVoter",
   "version": "1.0.0",
-  "description": "",
+  "description": "Simple ethereum contract & web3 app for polling DGD:ETH burning fee among allowed DAO participants",
   "main": "truffle-config.js",
   "directories": {
     "test": "test"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "truffle test",
+    "ganache": "ganache-cli start",
+    "migrate": "truffle migrate"
   },
   "keywords": [],
-  "author": "",
+  "author": "hypnotortoise",
   "license": "ISC",
   "dependencies": {
     "async": "^3.1.0",
