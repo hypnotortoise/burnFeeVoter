@@ -1,11 +1,21 @@
-image: alpine:latest
+image: node:12
+
+cache:
+  paths:
+    - client/node_modules
+
+before_script:
+  - cd client
+  - npm install
 
 pages:
   stage: deploy
   script:
     - find client -type f -regex '.*\.\(htm\|html\|txt\|text\|js\|css\)$' -exec gzip -f -k {} \;
+    - CI=true yarn pre-deploy
+    - mv build ../public
   artifacts:
     paths:
-    - client/build
+      - public
   # only:
   # - master
