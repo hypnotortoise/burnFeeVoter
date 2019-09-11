@@ -6,13 +6,13 @@ cache:
 
 before_script:
   - cd client
-  - yarn install
+  - npm install
 
 pages:
   stage: deploy
   script:
-    - find . -type f -regex '.*\.\(htm\|html\|txt\|text\|js\|css\)$' -exec gzip -f -k {} \;
-    - CI=true yarn pre-deploy
+    - CI=true npm build
+    - find build -type f -regex '.*\.\(htm\|html\|txt\|text\|js\|css\)$' -exec gzip -f -k {} \;
     - mv build ../public
   artifacts:
     paths:
