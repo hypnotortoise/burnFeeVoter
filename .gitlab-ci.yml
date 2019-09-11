@@ -11,7 +11,7 @@ before_script:
 pages:
   stage: deploy
   script:
-    - CI=true npm build
+    - CI=true npm run build
     - find build -type f -regex '.*\.\(htm\|html\|txt\|text\|js\|css\)$' -exec gzip -f -k {} \;
     - mv build ../public
   artifacts:
