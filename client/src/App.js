@@ -91,34 +91,46 @@ const VoteHeader = ({voteState}) => {
     }
 }
 
+const VotedStats = ({voteAvg, marketPrice, daoBalance}) => {
+  return (
+    <Card.Body>
+        Average Voted Fee: {voteAvg}
+    </Card.Body>
+    <Card.Body>
+      Expected Average Exchange Price based on Voted Fee: {
+        (
+          parseFloat(daoBalance/2e6)
+          - parseFloat(daoBalance/2e6)*voteAvg/100
+        )
+      }
+    </Card.Body>
+    <Card.Body>
+      Surplus over current Exchange Price: {
+        (
+          (
+            parseFloat(daoBalance/2e6)
+            - parseFloat(daoBalance/2e6)*voteAvg/100
+          )
+          - parseFloat(marketPrice).toPrecision(5)
+        )
+      }
+    </Card.Body>
+  );
+}
+
 const Stats = ({voteAvg, marketPrice, daoBalance}) => {
   return (
     <Card className="bg-dark text-white">
       <Card.Header>Vote Statistics</Card.Header>
       <Card.Body>
-        Average Voted Fee: {voteAvg}
-        <p />
         Average Exchange Price: {parseFloat(marketPrice).toPrecision(5)} DGD/ETH
-        <p />
-        Total ETH in MultiSig: {daoBalance}
-        <p />
-        Expected Average Exchange Price based on Voted Fee: {
-            (
-              parseFloat(daoBalance/2e6)
-              - parseFloat(daoBalance/2e6)*voteAvg/100
-            )
-        }
-        <p />
-        Surplus over current Exchange Price: {
-          (
-            (
-              parseFloat(daoBalance/2e6)
-              - parseFloat(daoBalance/2e6)*voteAvg/100
-            )
-            - parseFloat(marketPrice).toPrecision(5)
-          )
-          }
       </Card.Body>
+      <Card.Body>
+        Total ETH in MultiSig: {daoBalance}
+      </Card.Body>
+      {(voteAvg < 0) ? (<Card.Body>No counting votes</Card.Body>) :
+        (<VotedStats voteAvg={voteAvg} marketPrice={marketPrice} daoBalance={daoBalance} />)
+      }
     </Card>
   );
 }
@@ -300,6 +312,8 @@ class App extends Component {
             voteAvg += parseFloat(parseInt(vote.voteFee) * parseInt(vote.voteWeight) / totalVotedWeight);
           });
           this.setState({voteAvg: parseInt(voteAvg)});
+        } else {
+          this.setState({voteAvg: -1});
         }
       }, 1000);
     }
