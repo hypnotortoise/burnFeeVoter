@@ -94,26 +94,28 @@ const VoteHeader = ({voteState}) => {
 const VotedStats = ({voteAvg, marketPrice, daoBalance}) => {
   return (
     <Card.Body>
+      <Card.Text>
         Average Voted Fee: {voteAvg}
-    </Card.Body>
-    <Card.Body>
-      Expected Average Exchange Price based on Voted Fee: {
-        (
-          parseFloat(daoBalance/2e6)
-          - parseFloat(daoBalance/2e6)*voteAvg/100
-        )
-      }
-    </Card.Body>
-    <Card.Body>
-      Surplus over current Exchange Price: {
-        (
+      </Card.Text>
+      <Card.Text>
+        Expected Average Exchange Price based on Voted Fee: {
           (
             parseFloat(daoBalance/2e6)
             - parseFloat(daoBalance/2e6)*voteAvg/100
           )
-          - parseFloat(marketPrice).toPrecision(5)
-        )
-      }
+        }
+      </Card.Text>
+      <Card.Text>
+        Surplus over current Exchange Price: {
+          (
+            (
+              parseFloat(daoBalance/2e6)
+              - parseFloat(daoBalance/2e6)*voteAvg/100
+            )
+            - parseFloat(marketPrice).toPrecision(5)
+          )
+        }
+       </Card.Text>
     </Card.Body>
   );
 }
@@ -123,10 +125,11 @@ const Stats = ({voteAvg, marketPrice, daoBalance}) => {
     <Card className="bg-dark text-white">
       <Card.Header>Vote Statistics</Card.Header>
       <Card.Body>
-        Average Exchange Price: {parseFloat(marketPrice).toPrecision(5)} DGD/ETH
+        Average Exchange Price:
+          {isNaN(parseFloat(marketPrice)) ? "Unknown" : (<Card.Text>{parseFloat(marketPrice).toPrecision(5)} DGD/ETH</Card.Text>)}
       </Card.Body>
       <Card.Body>
-        Total ETH in MultiSig: {daoBalance}
+        Total ETH in MultiSig: {daoBalance || 0}
       </Card.Body>
       {(voteAvg < 0) ? (<Card.Body>No counting votes</Card.Body>) :
         (<VotedStats voteAvg={voteAvg} marketPrice={marketPrice} daoBalance={daoBalance} />)
@@ -326,7 +329,9 @@ class App extends Component {
       var asset = await ax.get('/assets/dgd')
       .then(
         (res) => { return res.data.result },
-        (err) => { if (err.response) { console.error(err.response) } }
+        (err) => { if (err.response) {
+          throw err.response;
+        }}
       );
 
       var exchanges = [];
@@ -337,7 +342,7 @@ class App extends Component {
       });
 
       if (exchanges.length < 1) {
-        throw "no exchanges found for DGD asset";
+        throw Error("no exchanges found for DGD asset");
       };
 
       var sum_exchange_price = 0;
@@ -362,8 +367,6 @@ class App extends Component {
         sum_exchange_price = sum_exchange_price + priceData.price;
       });
       // console.log(sum_exchange_price);
-
-      if ()
       this.setState({marketPrice: sum_exchange_price / urls.length});
     } catch (err) {
       console.error(err);
