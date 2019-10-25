@@ -216,6 +216,7 @@ class App extends Component {
       component.setState({ votes: votes });
 
       if (Object.keys(component.state.votes).includes(component.state.account)) {
+
         component.setState({ voteState: component.state.votes[component.state.account].voteState });
         component.setState({ voteFee: component.state.votes[component.state.account].voteFee });
       }
@@ -320,17 +321,23 @@ class App extends Component {
           exchanges.push(market);
         }
       });
-      // console.log(exchanges);
+
+      if (exchanges.length < 1) {
+        throw "no exchanges found for DGD asset";
+      };
 
       var sum_exchange_price = 0;
       var urls = [];
       exchanges.forEach((exchange) => {urls.push(exchange.route.replace("https://api.cryptowat.ch",""))});
-      // console.log(urls);
       var prices = await a.map(urls, 3, async(url) => {
         var data = await ax.get(url + "/price")
         .then(
           (res) => { return res.data.result },
-          (err) => { if (err.response) { console.error(err.response) } }
+          (err) => { if (err.response) {
+            console.error(err.response);
+            urls.splice(urls.indexOf(url),1);
+            return 0;
+          }}
         );
         // console.log(data);
         return data;
@@ -342,9 +349,11 @@ class App extends Component {
       });
       // console.log(sum_exchange_price);
 
-      this.setState({marketPrice: sum_exchange_price / exchanges.length});
+      if ()
+      this.setState({marketPrice: sum_exchange_price / urls.length});
     } catch (err) {
       console.error(err);
+      this.setState({marketPrice: "Unknown"});
     }
   }
 
